@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -37,6 +38,11 @@ public class CategoryResource {
 		
 	}
 	
+	@PutMapping(value = "/{id}")//atualizar
+	public ResponseEntity<CategoryDTO> update(@PathVariable Long id, @RequestBody CategoryDTO dto){//para que reconheça o objeto enviado e "case" com o categoryDTO, usa o requestbody
+		dto = service.update(id,dto);
+		return ResponseEntity.ok().body(dto);
+	}
 	
 	
 }

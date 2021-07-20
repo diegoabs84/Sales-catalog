@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import javax.persistence.EntityNotFoundException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -11,7 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.dabs.dscatalog.dto.CategoryDTO;
 import com.dabs.dscatalog.entities.Category;
 import com.dabs.dscatalog.repositories.CategoryRepository;
-import com.dabs.dscatalog.services.exceptions.EntityNotFoundException;
+import com.dabs.dscatalog.services.exceptions.ResourceNotFoundException;
 
 @Service//vai resgistrar essa classe como um componente que vai participar do sistema de in jeção de dependência automatizado do spring, mecanismo de injeção de dependência automatizado
 public class CategoryService {
@@ -29,7 +31,7 @@ public class CategoryService {
 	@Transactional(readOnly = true)
 	public CategoryDTO findById(Long id) {
 		Optional<Category> obj = repository.findById(id);//o optional é uma abordagem desde o java 8 para evitar trabalhar com o valor nulo. O spring data jpa implementou esse método com o retorno de um Optional
-		Category entity = obj.orElseThrow(()-> new EntityNotFoundException("Entity not found"));//obtém o objeto que estava dentro do optional ou lança uma exceção
+		Category entity = obj.orElseThrow(()-> new ResourceNotFoundException("Entity not found"));//obtém o objeto que estava dentro do optional ou lança uma exceção
 		return new CategoryDTO(entity);
 	}
 	@Transactional
@@ -38,6 +40,19 @@ public class CategoryService {
 		entity.setName(dto.getName());
 		entity = repository.save(entity);//referência atualizada
 		return new CategoryDTO(entity);//retornando novamente para um DTO
+	}
+	@Transactional
+	public CategoryDTO update(Long id,CategoryDTO dto) {
+		try {//se chamar o getOne pra um id que n existe, entra no catch
+		Category entity = repository.getOne(id);//primeiro instancia uma category, este getOne não toca o banco de dados, ele vai instanciar um objeto provisório, e depois que manda salvar aí sim vai no banco de dados
+		entity.setName(dto.getName());
+		entity = repository.save(entity);//agora sim salva no banco de dados
+		return new CategoryDTO(entity);
+		} catch( EntityNotFoundException e) {
+			throw new ResourceNotFoundException("Id not found" + id);
+			
+		}
+		
 	}
 	
 	
