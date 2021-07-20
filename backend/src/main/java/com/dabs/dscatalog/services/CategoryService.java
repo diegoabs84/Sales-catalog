@@ -7,12 +7,15 @@ import java.util.stream.Collectors;
 import javax.persistence.EntityNotFoundException;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.dabs.dscatalog.dto.CategoryDTO;
 import com.dabs.dscatalog.entities.Category;
 import com.dabs.dscatalog.repositories.CategoryRepository;
+import com.dabs.dscatalog.services.exceptions.DatabaseException;
 import com.dabs.dscatalog.services.exceptions.ResourceNotFoundException;
 
 @Service//vai resgistrar essa classe como um componente que vai participar do sistema de in jeção de dependência automatizado do spring, mecanismo de injeção de dependência automatizado
@@ -54,6 +57,20 @@ public class CategoryService {
 		}
 		
 	}
+	public void delete(Long id) {
+		try {
+			repository.deleteById(id);
+			
+		} catch( EmptyResultDataAccessException e) {//caso não tenha o id a ser deletado
+			throw new ResourceNotFoundException("Id not found" + id);
+		} catch( DataIntegrityViolationException e) {//caso dê um problema de integridade referencial no banco
+			throw new DatabaseException("Integrity Violation");
+			
+		}
+		
+	}
+	
+	
 	
 	
 }
