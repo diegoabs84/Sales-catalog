@@ -32,5 +32,13 @@ public class CategoryService {
 		Category entity = obj.orElseThrow(()-> new EntityNotFoundException("Entity not found"));//obtém o objeto que estava dentro do optional ou lança uma exceção
 		return new CategoryDTO(entity);
 	}
+	@Transactional
+	public CategoryDTO insert(CategoryDTO dto) {
+		Category entity = new Category();//converter o DTO para entity
+		entity.setName(dto.getName());
+		entity = repository.save(entity);//referência atualizada
+		return new CategoryDTO(entity);//retornando novamente para um DTO
+	}
+	
 	
 }
