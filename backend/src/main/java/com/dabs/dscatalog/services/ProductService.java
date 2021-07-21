@@ -1,6 +1,7 @@
 package com.dabs.dscatalog.services;
 
 import java.util.Optional;
+
 import javax.persistence.EntityNotFoundException;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,8 +12,11 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.dabs.dscatalog.dto.CategoryDTO;
 import com.dabs.dscatalog.dto.ProductDTO;
+import com.dabs.dscatalog.entities.Category;
 import com.dabs.dscatalog.entities.Product;
+import com.dabs.dscatalog.repositories.CategoryRepository;
 import com.dabs.dscatalog.repositories.ProductRepository;
 import com.dabs.dscatalog.services.exceptions.DatabaseException;
 import com.dabs.dscatalog.services.exceptions.ResourceNotFoundException;
@@ -22,6 +26,9 @@ public class ProductService {
 
 	@Autowired//instância gerenciada pelo Spring
 	private ProductRepository repository;//objeto responsável por acessar o banco de dados
+	
+	@Autowired//instância gerenciada pelo Spring
+	private CategoryRepository categoryRepository;//objeto responsável por acessar o banco de dados
 	
 	//garantir a integridade da transação
 	@Transactional(readOnly = true)//para operações de somente leitura
@@ -39,15 +46,16 @@ public class ProductService {
 	@Transactional
 	public ProductDTO insert(ProductDTO dto) {
 		Product entity = new Product();//converter o DTO para entity
-		//entity.setName(dto.getName());
+		copyDtoToEntity(dto, entity);
 		entity = repository.save(entity);//referência atualizada
 		return new ProductDTO(entity);//retornando novamente para um DTO
 	}
+	
 	@Transactional
 	public ProductDTO update(Long id,ProductDTO dto) {
 		try {//se chamar o getOne pra um id que n existe, entra no catch
 		Product entity = repository.getOne(id);//primeiro instancia uma category, este getOne não toca o banco de dados, ele vai instanciar um objeto provisório, e depois que manda salvar aí sim vai no banco de dados
-		//entity.setName(dto.getName());
+		copyDtoToEntity(dto, entity);
 		entity = repository.save(entity);//agora sim salva no banco de dados
 		return new ProductDTO(entity);
 		} catch( EntityNotFoundException e) {
@@ -68,7 +76,22 @@ public class ProductService {
 		}
 		
 	}
-	
+	private void copyDtoToEntity(ProductDTO dto, Product entity) {
+		entity.setName(dto.getName());
+		entity.setDescription(dto.getDescription());
+		entity.setDate(dto.getDate());
+		entity.setImgUrl(dto.getImgUrl());
+		entity.setPrice(dto.getPrice());
+		
+		entity.getCategories().clear();//limpando qualquer categoria que porventura houvesse na entity
+		for (CategoryDTO catDto : dto.getCategories()) {//percorrendo a lista de categorias do dto
+			Category category = categoryRepository.getOne(catDto.getId());//pega o id da categoria dentro da lista de categorias do dto para instanciar um objeto category sem tocar no banco de dados ainda
+			entity.getCategories().add(category);//acessa a lista de categorias da entidade e adiciona a categoria instanciada
+			
+		}
+		
+		
+	}
 	
 	
 	
