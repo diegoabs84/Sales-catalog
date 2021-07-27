@@ -1,13 +1,14 @@
 package com.dabs.dscatalog.services;
 
 import java.util.Optional;
+
 import javax.persistence.EntityNotFoundException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,7 +18,7 @@ import com.dabs.dscatalog.repositories.CategoryRepository;
 import com.dabs.dscatalog.services.exceptions.DatabaseException;
 import com.dabs.dscatalog.services.exceptions.ResourceNotFoundException;
 
-@Service//vai resgistrar essa classe como um componente que vai participar do sistema de in jeção de dependência automatizado do spring, mecanismo de injeção de dependência automatizado
+@Service//vai registrar essa classe como um componente que vai participar do sistema de injeção de dependência automatizado do spring, mecanismo de injeção de dependência automatizado
 public class CategoryService {
 
 	@Autowired//instância gerenciada pelo Spring
@@ -25,8 +26,8 @@ public class CategoryService {
 	
 	//garantir a integridade da transação
 	@Transactional(readOnly = true)//para operações de somente leitura
-	public Page<CategoryDTO> findAllPaged(PageRequest pageRequest){
-		Page<Category> list =  repository.findAll(pageRequest);
+	public Page<CategoryDTO> findAllPaged(Pageable pageable){
+		Page<Category> list =  repository.findAll(pageable);
 		return list.map(x -> new CategoryDTO(x));//pegando cada elemento da lista original, aplicando essa função lambda, transformando a lista que era Category em uma lista CategoryDto.
 			
 	}
